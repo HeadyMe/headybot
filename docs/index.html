@@ -1,0 +1,646 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>HeadyBot Docs — Agents, Swarms & Automation</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet" />
+  <style>
+    :root {
+      --phi: 1.618033988749895;
+      --psi: 0.618033988749895;
+      --sp-1: 5px; --sp-2: 8px; --sp-3: 13px; --sp-4: 21px;
+      --sp-5: 34px; --sp-6: 55px; --sp-7: 89px;
+      --bg-primary: #0a0a0f;
+      --bg-secondary: #12121a;
+      --bg-card: rgba(255, 255, 255, 0.03);
+      --bg-glass: rgba(255, 255, 255, 0.05);
+      --text-primary: #e8e8f0;
+      --text-secondary: #9898a8;
+      --border-subtle: rgba(255, 255, 255, 0.08);
+      --accent: #00d4aa;
+      --heady-gold: #d4a017;
+      --gold-dim: rgba(212, 160, 23, 0.12);
+      /* Layer 7 — Octagon Automation: Red */
+      --layer-color: #ef4444;
+      --layer-dim: rgba(239, 68, 68, 0.10);
+      --layer-glow: rgba(239, 68, 68, 0.25);
+      --sidebar-width: 260px;
+      --topnav-height: 55px;
+      --radius: 8px;
+      --radius-lg: 13px;
+    }
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    html { scroll-behavior: smooth; }
+    body { font-family: 'Inter', system-ui, sans-serif; background: var(--bg-primary); color: var(--text-primary); line-height: 1.618; min-height: 100vh; }
+
+    .topnav { position: fixed; top: 0; left: 0; right: 0; height: var(--topnav-height); background: rgba(10,10,15,0.92); backdrop-filter: blur(21px); border-bottom: 1px solid var(--border-subtle); display: flex; align-items: center; gap: var(--sp-5); padding: 0 var(--sp-5); z-index: 1000; }
+    .topnav-logo { display: flex; align-items: center; gap: var(--sp-2); font-weight: 600; font-size: 15px; color: var(--layer-color); text-decoration: none; flex-shrink: 0; }
+    .topnav-logo svg { width: 28px; height: 28px; }
+    .topnav-domains { display: flex; align-items: center; gap: var(--sp-1); flex: 1; overflow-x: auto; scrollbar-width: none; }
+    .topnav-domains::-webkit-scrollbar { display: none; }
+    .domain-link { font-size: 12px; color: var(--text-secondary); text-decoration: none; padding: var(--sp-1) var(--sp-2); border-radius: var(--radius); border: 1px solid transparent; white-space: nowrap; transition: all 0.2s ease; }
+    .domain-link:hover { color: var(--text-primary); border-color: var(--border-subtle); background: var(--bg-glass); }
+    .domain-link.active { color: var(--layer-color); border-color: var(--layer-dim); background: var(--layer-dim); }
+    .topnav-badge { flex-shrink: 0; font-size: 11px; font-family: 'JetBrains Mono', monospace; color: var(--layer-color); background: var(--layer-dim); border: 1px solid var(--layer-glow); padding: 2px var(--sp-2); border-radius: 4px; }
+
+    .layout { display: flex; padding-top: var(--topnav-height); min-height: 100vh; }
+
+    .sidebar { position: fixed; top: var(--topnav-height); left: 0; width: var(--sidebar-width); height: calc(100vh - var(--topnav-height)); background: var(--bg-secondary); border-right: 1px solid var(--border-subtle); overflow-y: auto; padding: var(--sp-5) 0; scrollbar-width: thin; scrollbar-color: var(--border-subtle) transparent; z-index: 100; }
+    .sidebar-section { margin-bottom: var(--sp-4); }
+    .sidebar-heading { font-size: 10px; font-weight: 600; letter-spacing: 0.1em; text-transform: uppercase; color: var(--text-secondary); padding: 0 var(--sp-4); margin-bottom: var(--sp-2); }
+    .sidebar-link { display: flex; align-items: center; gap: var(--sp-2); padding: var(--sp-2) var(--sp-4); font-size: 13px; color: var(--text-secondary); text-decoration: none; border-left: 2px solid transparent; transition: all 0.15s ease; }
+    .sidebar-link:hover { color: var(--text-primary); background: var(--bg-glass); border-left-color: var(--border-subtle); }
+    .sidebar-link.active { color: var(--layer-color); background: var(--layer-dim); border-left-color: var(--layer-color); }
+    .sidebar-link .link-num { font-family: 'JetBrains Mono', monospace; font-size: 10px; color: var(--text-secondary); opacity: 0.6; min-width: 24px; }
+
+    .main { margin-left: var(--sidebar-width); flex: 1; padding: var(--sp-7) var(--sp-6); max-width: 900px; }
+
+    .hero { display: flex; align-items: flex-start; gap: var(--sp-5); margin-bottom: var(--sp-6); padding-bottom: var(--sp-6); border-bottom: 1px solid var(--border-subtle); }
+    .hero-geo { flex-shrink: 0; width: 89px; height: 89px; opacity: 0.85; }
+    .hero-text h1 { font-size: 28px; font-weight: 700; color: var(--text-primary); line-height: 1.3; margin-bottom: var(--sp-2); }
+    .hero-text h1 span { color: var(--layer-color); }
+    .hero-text p { color: var(--text-secondary); font-size: 15px; max-width: 560px; }
+    .hero-meta { display: flex; gap: var(--sp-3); margin-top: var(--sp-3); flex-wrap: wrap; }
+    .meta-pill { font-size: 11px; font-family: 'JetBrains Mono', monospace; padding: 3px var(--sp-2); border-radius: 4px; border: 1px solid var(--border-subtle); color: var(--text-secondary); }
+    .meta-pill.accent { color: var(--layer-color); border-color: var(--layer-dim); background: var(--layer-dim); }
+    .meta-pill.gold { color: var(--heady-gold); border-color: var(--gold-dim); background: var(--gold-dim); }
+
+    .doc-section { margin-bottom: var(--sp-7); scroll-margin-top: calc(var(--topnav-height) + var(--sp-4)); }
+    .section-label { font-size: 10px; font-weight: 600; letter-spacing: 0.1em; text-transform: uppercase; color: var(--layer-color); font-family: 'JetBrains Mono', monospace; margin-bottom: var(--sp-2); }
+    .section-title { font-size: 22px; font-weight: 700; color: var(--text-primary); margin-bottom: var(--sp-3); line-height: 1.3; }
+    .section-body { color: var(--text-secondary); font-size: 14px; line-height: 1.7; margin-bottom: var(--sp-4); }
+    .section-body p { margin-bottom: var(--sp-3); }
+    .section-body strong { color: var(--text-primary); font-weight: 500; }
+
+    .card-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(220px, 1fr)); gap: var(--sp-3); margin-top: var(--sp-4); }
+    .card { background: var(--bg-card); border: 1px solid var(--border-subtle); border-radius: var(--radius-lg); padding: var(--sp-4); transition: border-color 0.2s, background 0.2s; }
+    .card:hover { border-color: var(--layer-color); background: var(--layer-dim); }
+    .card h3 { font-size: 13px; font-weight: 600; color: var(--text-primary); margin-bottom: var(--sp-1); }
+    .card p { font-size: 12px; color: var(--text-secondary); line-height: 1.5; }
+
+    .bee-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(180px, 1fr)); gap: var(--sp-2); margin-top: var(--sp-3); }
+    .bee-card { background: var(--bg-card); border: 1px solid var(--border-subtle); border-radius: var(--radius); padding: var(--sp-3); }
+    .bee-card:hover { border-color: var(--layer-dim); }
+    .bee-name { font-size: 12px; font-weight: 600; color: var(--text-primary); font-family: 'JetBrains Mono', monospace; }
+    .bee-tier { font-size: 10px; color: var(--text-secondary); margin-top: 2px; }
+    .bee-desc { font-size: 11px; color: var(--text-secondary); margin-top: var(--sp-1); line-height: 1.4; }
+
+    .code-block { background: var(--bg-secondary); border: 1px solid var(--border-subtle); border-radius: var(--radius-lg); padding: var(--sp-4); font-family: 'JetBrains Mono', monospace; font-size: 12px; color: #a0a0b8; overflow-x: auto; margin: var(--sp-4) 0; line-height: 1.618; }
+    .code-block .hl { color: var(--layer-color); }
+    .code-block .hl-green { color: #4ade80; }
+    .code-block .hl-amber { color: var(--heady-gold); }
+    .code-block .hl-comment { color: #4a4a6a; }
+
+    .data-table { width: 100%; border-collapse: collapse; font-size: 13px; margin: var(--sp-4) 0; }
+    .data-table th { text-align: left; padding: var(--sp-2) var(--sp-3); font-size: 11px; font-weight: 600; letter-spacing: 0.05em; text-transform: uppercase; color: var(--text-secondary); border-bottom: 1px solid var(--border-subtle); }
+    .data-table td { padding: var(--sp-2) var(--sp-3); border-bottom: 1px solid rgba(255,255,255,0.04); color: var(--text-secondary); vertical-align: top; }
+    .data-table td:first-child { font-family: 'JetBrains Mono', monospace; font-size: 12px; color: var(--layer-color); }
+    .data-table tr:hover td { background: var(--bg-glass); }
+
+    .info-box { background: var(--layer-dim); border: 1px solid var(--layer-glow); border-left: 3px solid var(--layer-color); border-radius: var(--radius); padding: var(--sp-4); font-size: 13px; color: var(--text-secondary); margin: var(--sp-4) 0; }
+    .info-box strong { color: var(--layer-color); }
+    .phi-box { background: var(--gold-dim); border: 1px solid rgba(212,160,23,0.3); border-left: 3px solid var(--heady-gold); border-radius: var(--radius); padding: var(--sp-4); font-size: 13px; color: var(--text-secondary); margin: var(--sp-4) 0; }
+    .phi-box strong { color: var(--heady-gold); }
+
+    .badge { display: inline-flex; align-items: center; font-size: 10px; font-family: 'JetBrains Mono', monospace; padding: 2px 6px; border-radius: 3px; border: 1px solid; vertical-align: middle; }
+    .badge-red { color: var(--layer-color); border-color: var(--layer-dim); background: var(--layer-dim); }
+    .badge-green { color: #4ade80; border-color: rgba(74,222,128,0.2); background: rgba(74,222,128,0.08); }
+    .badge-amber { color: var(--heady-gold); border-color: var(--gold-dim); background: var(--gold-dim); }
+
+    .lifecycle-row { display: flex; gap: var(--sp-3); margin: var(--sp-4) 0; flex-wrap: wrap; }
+    .lifecycle-step { flex: 1; min-width: 140px; background: var(--bg-card); border: 1px solid var(--border-subtle); border-radius: var(--radius-lg); padding: var(--sp-4); text-align: center; }
+    .lifecycle-step:hover { border-color: var(--layer-color); background: var(--layer-dim); }
+    .lifecycle-icon { font-size: 24px; margin-bottom: var(--sp-2); }
+    .lifecycle-name { font-size: 13px; font-weight: 600; color: var(--text-primary); margin-bottom: 4px; }
+    .lifecycle-desc { font-size: 11px; color: var(--text-secondary); line-height: 1.4; }
+
+    .divider { height: 1px; background: var(--border-subtle); margin: var(--sp-6) 0; }
+
+    .footer { margin-left: var(--sidebar-width); border-top: 1px solid var(--border-subtle); padding: var(--sp-5) var(--sp-6); background: var(--bg-secondary); }
+    .footer-inner { max-width: 900px; display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: var(--sp-3); }
+    .footer-copy { font-size: 12px; color: var(--text-secondary); }
+    .footer-links { display: flex; gap: var(--sp-3); flex-wrap: wrap; }
+    .footer-links a { font-size: 12px; color: var(--text-secondary); text-decoration: none; }
+    .footer-links a:hover { color: var(--layer-color); }
+
+    @media (max-width: 768px) {
+      .sidebar { transform: translateX(-100%); }
+      .main { margin-left: 0; padding: var(--sp-5) var(--sp-4); }
+      .footer { margin-left: 0; }
+      .topnav-domains { display: none; }
+      .hero { flex-direction: column; }
+    }
+  </style>
+</head>
+<body>
+
+<nav class="topnav">
+  <a href="https://headybot.com" class="topnav-logo">
+    <!-- Octagon SVG -->
+    <svg viewBox="0 0 28 28" fill="none" xmlns="http://www.w3.org/2000/svg" aria-label="HeadyBot">
+      <polygon points="10,3 18,3 25,10 25,18 18,25 10,25 3,18 3,10" stroke="#ef4444" stroke-width="1.5" fill="rgba(239,68,68,0.12)"/>
+      <polygon points="11,7 17,7 21,11 21,17 17,21 11,21 7,17 7,11" stroke="#ef4444" stroke-width="0.8" fill="rgba(239,68,68,0.06)"/>
+      <circle cx="14" cy="14" r="3" fill="#ef4444" opacity="0.7"/>
+      <path d="M14 10v2M14 16v2M10 14h2M16 14h2" stroke="#ef4444" stroke-width="0.8"/>
+    </svg>
+    HeadyBot
+  </a>
+  <div class="topnav-domains">
+    <a href="https://headyme.com" class="domain-link">headyme.com</a>
+    <a href="https://headysystems.com" class="domain-link">headysystems.com</a>
+    <a href="https://headyconnection.org" class="domain-link">headyconnection.org</a>
+    <a href="https://headybuddy.org" class="domain-link">headybuddy.org</a>
+    <a href="https://headymcp.com" class="domain-link">headymcp.com</a>
+    <a href="https://headyio.com" class="domain-link">headyio.com</a>
+    <a href="https://headybot.com" class="domain-link active">headybot.com</a>
+    <a href="https://headyai.com" class="domain-link">headyai.com</a>
+    <a href="https://headyapi.com" class="domain-link">headyapi.com</a>
+  </div>
+  <span class="topnav-badge">Layer 7 · Octagon Automation</span>
+</nav>
+
+<div class="layout">
+  <aside class="sidebar">
+    <div class="sidebar-section">
+      <div class="sidebar-heading">HeadyBot Docs</div>
+      <a href="#overview" class="sidebar-link active"><span class="link-num">00</span> Overview</a>
+    </div>
+    <div class="sidebar-section">
+      <div class="sidebar-heading">01 Architecture</div>
+      <a href="#bee-lifecycle" class="sidebar-link"><span class="link-num">01.1</span> Bee Lifecycle</a>
+      <a href="#swarm-types" class="sidebar-link"><span class="link-num">01.2</span> 17 Swarm Types</a>
+      <a href="#conductor" class="sidebar-link"><span class="link-num">01.3</span> Heady Conductor</a>
+      <a href="#dag-tasks" class="sidebar-link"><span class="link-num">01.4</span> DAG Task Distribution</a>
+    </div>
+    <div class="sidebar-section">
+      <div class="sidebar-heading">02 Features</div>
+      <a href="#bee-types" class="sidebar-link"><span class="link-num">02.1</span> 30+ Bee Types</a>
+      <a href="#swarm-consensus" class="sidebar-link"><span class="link-num">02.2</span> Swarm Consensus</a>
+      <a href="#cron-scheduler" class="sidebar-link"><span class="link-num">02.3</span> Cron Scheduler</a>
+      <a href="#workflow-orchestration" class="sidebar-link"><span class="link-num">02.4</span> Workflow Orchestration</a>
+    </div>
+    <div class="sidebar-section">
+      <div class="sidebar-heading">03 Getting Started</div>
+      <a href="#quickstart" class="sidebar-link"><span class="link-num">03.1</span> Quickstart</a>
+      <a href="#spawn-bee" class="sidebar-link"><span class="link-num">03.2</span> Spawn a Bee</a>
+    </div>
+    <div class="sidebar-section">
+      <div class="sidebar-heading">04 Reference</div>
+      <a href="#agent-registry" class="sidebar-link"><span class="link-num">04.1</span> Agent Registry</a>
+      <a href="#phi-concurrency" class="sidebar-link"><span class="link-num">04.2</span> φ Concurrency</a>
+      <a href="#mcp-tools" class="sidebar-link"><span class="link-num">04.3</span> MCP Tool Array</a>
+    </div>
+  </aside>
+
+  <main class="main">
+
+    <!-- HERO -->
+    <div class="hero" id="overview">
+      <svg class="hero-geo" viewBox="0 0 89 89" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+        <polygon points="44.5,4 68,15 79,37 72,62 52,78 37,78 17,62 10,37 21,15" stroke="#ef4444" stroke-width="1.5" fill="rgba(239,68,68,0.06)"/>
+        <polygon points="44.5,16 62,24 70,41 64,58 50,67 39,67 25,58 19,41 27,24" stroke="#ef4444" stroke-width="0.8" fill="rgba(239,68,68,0.04)"/>
+        <polygon points="44.5,28 56,33 60,45 55,57 44.5,62 34,57 29,45 33,33" stroke="#ef4444" stroke-width="0.5" fill="rgba(239,68,68,0.08)"/>
+        <circle cx="44.5" cy="44" r="6" fill="#ef4444" opacity="0.5"/>
+        <circle cx="44.5" cy="44" r="3" fill="#ef4444" opacity="0.8"/>
+      </svg>
+      <div class="hero-text">
+        <h1>HeadyBot — <span>Swarm Automation</span></h1>
+        <p>The agent orchestration layer of the Heady ecosystem. HeadyBot manages 17 swarm types, 89 bee-type micro-agents, DAG-based task distribution, and LLM pipeline coordination — all governed by φ-scaled concurrency and the Omnipotence Directive.</p>
+        <div class="hero-meta">
+          <span class="meta-pill accent">Layer 7 — Octagon Automation</span>
+          <span class="meta-pill gold">17 Swarms · 89 Bees</span>
+          <span class="meta-pill">Heady Conductor</span>
+          <span class="meta-pill">47 MCP Tools</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- 00 Overview -->
+    <section class="doc-section">
+      <div class="section-label">00 — Overview</div>
+      <div class="section-title">What is HeadyBot?</div>
+      <div class="section-body">
+        <p>HeadyBot is the <strong>autonomous agent framework</strong> powering the Heady ecosystem. It orchestrates a swarm of specialized AI micro-agents — called <em>bees</em> — across 17 logical swarm clusters. Each bee is a stateless, sandboxed task worker equipped with access to the 47-tool MCP array and a localized shadow memory via Redis.</p>
+        <p>The octagonal geometry of Layer 7 represents the eight symmetrical axes of automation: spawning, execution, reporting, retiring, consensus, scheduling, orchestration, and self-optimization. HeadyBot continuously monitors swarm health, auto-tunes concurrency via <code>heady-eval</code>, and routes inference pressure to the most capable available bee.</p>
+        <p>All agent counts, concurrency limits, and pipeline stage counts derive from the <strong>Fibonacci sequence</strong>: 17 swarm types (prime near fib), 89 bee types (fib(11)), and pipeline stages of 8, 13, and 21 (fib(6), fib(7), fib(8)).</p>
+      </div>
+
+      <div class="card-grid">
+        <div class="card">
+          <h3>17 Swarm Types</h3>
+          <p>Logical agent clusters organized by capability domain. Each swarm has a primary coordinator bee and up to fib(7)=13 worker bees running concurrently.</p>
+        </div>
+        <div class="card">
+          <h3>89 Bee Types</h3>
+          <p>Micro-agent specializations mapped to fib(11)=89. Each bee type has a defined model tier (Premium/Standard/Fast), tool permissions, and memory scope.</p>
+        </div>
+        <div class="card">
+          <h3>DAG Execution</h3>
+          <p>Tasks are represented as Directed Acyclic Graphs. The conductor resolves dependency order and dispatches subtasks in parallel when the DAG topology allows.</p>
+        </div>
+        <div class="card">
+          <h3>Cron Scheduler</h3>
+          <p>Fibonacci-interval cron jobs trigger recurring workflows: health checks at fib(7)=13 min, memory consolidation at fib(9)=34 min, system audits daily.</p>
+        </div>
+        <div class="card">
+          <h3>Swarm Consensus</h3>
+          <p>Multi-bee decisions use a CSL-weighted voting protocol. No action proceeds unless the aggregate confidence score exceeds the INJECT threshold (0.718).</p>
+        </div>
+        <div class="card">
+          <h3>φ Concurrency</h3>
+          <p>Thread pool sizes follow the Fibonacci sequence: 2, 3, 5, 8, 13. The auto-tuner scales within these bounds based on compute pressure and latency deltas.</p>
+        </div>
+      </div>
+    </section>
+
+    <div class="divider"></div>
+
+    <!-- 01.1 Bee Lifecycle -->
+    <section class="doc-section" id="bee-lifecycle">
+      <div class="section-label">01.1 — Architecture</div>
+      <div class="section-title">HeadyBee Lifecycle</div>
+      <div class="section-body">
+        <p>Every bee agent follows a four-phase lifecycle managed by the <code>heady-conductor</code> service. Bees are <strong>stateless during execution</strong> — they receive task context from the conductor, access tools via MCP, read shadow memory from Redis, and return a structured result before retiring.</p>
+      </div>
+      <div class="lifecycle-row">
+        <div class="lifecycle-step">
+          <div class="lifecycle-icon">🥚</div>
+          <div class="lifecycle-name">SPAWN</div>
+          <div class="lifecycle-desc">Conductor instantiates bee with task context, model tier, tool permissions bitmask, and Redis session key.</div>
+        </div>
+        <div class="lifecycle-step">
+          <div class="lifecycle-icon">⚡</div>
+          <div class="lifecycle-name">EXECUTE</div>
+          <div class="lifecycle-desc">Bee processes task through HCFP pipeline. Calls MCP tools as needed. Vector context loaded from Qdrant via shadow memory.</div>
+        </div>
+        <div class="lifecycle-step">
+          <div class="lifecycle-icon">📡</div>
+          <div class="lifecycle-name">REPORT</div>
+          <div class="lifecycle-desc">Bee returns structured result with CSL confidence score, tool call trace, and token usage. Conductor updates task DAG status.</div>
+        </div>
+        <div class="lifecycle-step">
+          <div class="lifecycle-icon">💤</div>
+          <div class="lifecycle-name">RETIRE</div>
+          <div class="lifecycle-desc">Bee state written to Shadow Memory (Redis). Worker thread released back to φ-scaled pool. Bee instance dissolved.</div>
+        </div>
+      </div>
+      <div class="code-block">
+<span class="hl-comment">// Conductor spawn call — TypeScript</span>
+<span class="hl">await</span> conductor.spawnBee({
+  type: <span class="hl-green">'researcher-bee'</span>,
+  swarm: <span class="hl-green">'INTELLIGENCE_SWARM'</span>,
+  task: {
+    id: <span class="hl-green">'task_01j8...'</span>,
+    objective: <span class="hl-green">'Analyze PR #142 for security regressions'</span>,
+    priority: <span class="hl-amber">0.882</span>,      <span class="hl-comment">// CSL HIGH</span>
+    maxTokens: <span class="hl-amber">4096</span>,
+    timeout: Math.round(PHI ** <span class="hl-amber">5</span> * <span class="hl-amber">1000</span>), <span class="hl-comment">// 11,090ms TIMING.NORMAL</span>
+  },
+  tools: [<span class="hl-green">'deep_scan'</span>, <span class="hl-green">'risks'</span>, <span class="hl-green">'analyze'</span>],
+});
+      </div>
+    </section>
+
+    <!-- 01.2 Swarm Types -->
+    <section class="doc-section" id="swarm-types">
+      <div class="section-label">01.2 — Architecture</div>
+      <div class="section-title">17 Swarm Types</div>
+      <div class="section-body">
+        <p>The 17 swarm types represent logical capability clusters, each governing a distinct domain of the Heady automation surface. Swarms are persistent organizational units — individual bees within a swarm share context via a swarm-scoped Redis namespace.</p>
+      </div>
+      <table class="data-table">
+        <thead><tr><th>Swarm ID</th><th>Domain</th><th>Primary Bee</th><th>Max Concurrent Bees</th></tr></thead>
+        <tbody>
+          <tr><td>BRAIN_SWARM</td><td>Cognitive Orchestration</td><td>brain-bee</td><td>3 (fib(4))</td></tr>
+          <tr><td>INTELLIGENCE_SWARM</td><td>Research & Analysis</td><td>researcher-bee</td><td>2 (fib(3))</td></tr>
+          <tr><td>OBSERVER_SWARM</td><td>Telemetry & Monitoring</td><td>observer-bee</td><td>5 (fib(5))</td></tr>
+          <tr><td>DEVOPS_SWARM</td><td>Infrastructure & Deploy</td><td>devops-bee</td><td>3 (fib(4))</td></tr>
+          <tr><td>SENTINEL_SWARM</td><td>Security & Compliance</td><td>sentinel-bee</td><td>2 (fib(3))</td></tr>
+          <tr><td>BUILDER_SWARM</td><td>Code Generation</td><td>coder-bee</td><td>2 (fib(3))</td></tr>
+          <tr><td>AUTOMATION_SWARM</td><td>Task Automation</td><td>jules-bee</td><td>5 (fib(5))</td></tr>
+          <tr><td>CONTENT_SWARM</td><td>CMS & Publishing</td><td>content-bee</td><td>3 (fib(4))</td></tr>
+          <tr><td>CREATIVE_SWARM</td><td>Creative Generation</td><td>creative-bee</td><td>3 (fib(4))</td></tr>
+          <tr><td>MEMORY_SWARM</td><td>Vector Memory Ops</td><td>memory-bee</td><td>5 (fib(5))</td></tr>
+          <tr><td>DEPLOYMENT_SWARM</td><td>Cloud Run Promotion</td><td>deployment-bee</td><td>2 (fib(3))</td></tr>
+          <tr><td>ANALYSIS_SWARM</td><td>Data Analysis</td><td>analysis-bee</td><td>3 (fib(4))</td></tr>
+          <tr><td>COMMUNICATION_SWARM</td><td>Slack/Discord Routing</td><td>comms-bee</td><td>5 (fib(5))</td></tr>
+          <tr><td>ATLAS_SWARM</td><td>Data Mapping</td><td>atlas-bee</td><td>3 (fib(4))</td></tr>
+          <tr><td>SOPHIA_SWARM</td><td>Knowledge Graph</td><td>sophia-bee</td><td>2 (fib(3))</td></tr>
+          <tr><td>MUSE_SWARM</td><td>Innovation Pipeline</td><td>muse-bee</td><td>3 (fib(4))</td></tr>
+          <tr><td>AUDIT_SWARM</td><td>System Audit & Self-Opt</td><td>auditor-bee</td><td>2 (fib(3))</td></tr>
+        </tbody>
+      </table>
+    </section>
+
+    <!-- 01.3 Conductor -->
+    <section class="doc-section" id="conductor">
+      <div class="section-label">01.3 — Architecture</div>
+      <div class="section-title">Heady Conductor</div>
+      <div class="section-body">
+        <p>The <strong>heady-conductor</strong> service is the central orchestration layer — the hive mind that coordinates all swarm activity. It maintains the global task queue, manages the DAG execution graph, tracks bee availability across swarms, and auto-tunes concurrency via <code>heady-eval</code> feedback loops.</p>
+        <p>The conductor exposes a gRPC-compatible internal API consumed by the pipeline engine and the auto-success engine. External automation requests enter via the <code>heady-manager</code> gateway at <code>/api/orchestration</code>.</p>
+      </div>
+      <div class="info-box">
+        <strong>Conductor Architecture:</strong> The conductor is a stateful Cloud Run service with a dedicated Redis connection pool (fib(5)=5 connections minimum, scaling to fib(7)=13 under load). It persists swarm topology, task DAG state, and bee availability maps in Redis with a 55-day TTL (Fibonacci 10th term).
+      </div>
+      <div class="code-block">
+<span class="hl-comment">// POST /api/orchestration — submit a workflow</span>
+{
+  <span class="hl-green">"workflow"</span>: {
+    <span class="hl-green">"id"</span>: <span class="hl-green">"wf_01j8abc..."</span>,
+    <span class="hl-green">"name"</span>: <span class="hl-green">"Auto-PR Review"</span>,
+    <span class="hl-green">"trigger"</span>: { <span class="hl-green">"type"</span>: <span class="hl-green">"webhook"</span>, <span class="hl-green">"source"</span>: <span class="hl-green">"github"</span>, <span class="hl-green">"event"</span>: <span class="hl-green">"pull_request.opened"</span> },
+    <span class="hl-green">"steps"</span>: [
+      { <span class="hl-green">"id"</span>: <span class="hl-green">"s1"</span>, <span class="hl-green">"bee"</span>: <span class="hl-green">"researcher-bee"</span>, <span class="hl-green">"tools"</span>: [<span class="hl-green">"deep_scan"</span>, <span class="hl-green">"risks"</span>] },
+      { <span class="hl-green">"id"</span>: <span class="hl-green">"s2"</span>, <span class="hl-green">"bee"</span>: <span class="hl-green">"coder-bee"</span>,      <span class="hl-green">"dependsOn"</span>: [<span class="hl-green">"s1"</span>], <span class="hl-green">"tools"</span>: [<span class="hl-green">"refactor"</span>] },
+      { <span class="hl-green">"id"</span>: <span class="hl-green">"s3"</span>, <span class="hl-green">"bee"</span>: <span class="hl-green">"comms-bee"</span>,    <span class="hl-green">"dependsOn"</span>: [<span class="hl-green">"s2"</span>], <span class="hl-green">"tools"</span>: [<span class="hl-green">"heady_buddy"</span>] }
+    ]
+  }
+}
+      </div>
+    </section>
+
+    <!-- 01.4 DAG -->
+    <section class="doc-section" id="dag-tasks">
+      <div class="section-label">01.4 — Architecture</div>
+      <div class="section-title">DAG-Based Task Distribution</div>
+      <div class="section-body">
+        <p>HeadyBot represents every multi-step workflow as a <strong>Directed Acyclic Graph (DAG)</strong>. Nodes are individual bee tasks; edges are dependency relationships. The conductor's DAG executor resolves the graph topologically and dispatches all leaf nodes (tasks with no unresolved dependencies) in parallel, up to the active swarm's φ-concurrency limit.</p>
+        <p>CSL confidence weights gate DAG progression: if a node's bee returns a confidence score below <strong>INCLUDE (0.382)</strong>, the DAG halts at that node and a SENTINEL_SWARM bee is spawned to investigate before execution resumes.</p>
+      </div>
+      <div class="phi-box">
+        <strong>DAG φ Scaling Rules:</strong> Maximum DAG depth = fib(7) = 13 steps. Maximum parallel fan-out per level = fib(5) = 5 bees. Maximum total nodes per DAG = fib(10) = 55. These bounds prevent unbounded recursion while enabling complex multi-agent workflows.
+      </div>
+    </section>
+
+    <div class="divider"></div>
+
+    <!-- 02.1 Bee Types -->
+    <section class="doc-section" id="bee-types">
+      <div class="section-label">02.1 — Features</div>
+      <div class="section-title">30+ Named Bee Types</div>
+      <div class="section-body">
+        <p>The full bee taxonomy spans 89 specializations across all 17 swarms. The following are the 30 primary bee types used most frequently in production workflows.</p>
+      </div>
+      <div class="bee-grid">
+        <div class="bee-card"><div class="bee-name">agents-bee</div><div class="bee-tier">Premium · conc: 3</div><div class="bee-desc">Orchestrates sub-agent spawning chains. Meta-coordinator.</div></div>
+        <div class="bee-card"><div class="bee-name">brain-bee</div><div class="bee-tier">Premium · conc: 3</div><div class="bee-desc">Central cognitive orchestrator with metacognitive awareness.</div></div>
+        <div class="bee-card"><div class="bee-name">researcher-bee</div><div class="bee-tier">Premium · conc: 2</div><div class="bee-desc">Deep fact-gathering, data synthesis, and source validation.</div></div>
+        <div class="bee-card"><div class="bee-name">creative-bee</div><div class="bee-tier">Standard · conc: 3</div><div class="bee-desc">Creative generation: copy, concepts, visual briefs, naming.</div></div>
+        <div class="bee-card"><div class="bee-name">deployment-bee</div><div class="bee-tier">Standard · conc: 2</div><div class="bee-desc">Cloud Run promotion, Docker tag management, env bridging.</div></div>
+        <div class="bee-card"><div class="bee-name">coder-bee</div><div class="bee-tier">Premium · conc: 2</div><div class="bee-desc">Code generation, TypeScript migration, test suite authoring.</div></div>
+        <div class="bee-card"><div class="bee-name">devops-bee</div><div class="bee-tier">Standard · conc: 3</div><div class="bee-desc">Infrastructure config, Terraform plans, CI/CD pipeline edits.</div></div>
+        <div class="bee-card"><div class="bee-name">observer-bee</div><div class="bee-tier">Fast · conc: 5</div><div class="bee-desc">Telemetry monitoring, latency tracking, entropy detection.</div></div>
+        <div class="bee-card"><div class="bee-name">sentinel-bee</div><div class="bee-tier">Standard · conc: 2</div><div class="bee-desc">Zero-Trust sandbox enforcement, CSL gate validation.</div></div>
+        <div class="bee-card"><div class="bee-name">jules-bee</div><div class="bee-tier">Fast · conc: 5</div><div class="bee-desc">Task automation, backlog bridging, GitHub issue sync.</div></div>
+        <div class="bee-card"><div class="bee-name">atlas-bee</div><div class="bee-tier">Standard · conc: 3</div><div class="bee-desc">Data cartography — maps relationships across large datasets.</div></div>
+        <div class="bee-card"><div class="bee-name">content-bee</div><div class="bee-tier">Standard · conc: 3</div><div class="bee-desc">CMS content distribution, SEO optimization, publishing flow.</div></div>
+        <div class="bee-card"><div class="bee-name">muse-bee</div><div class="bee-tier">Standard · conc: 3</div><div class="bee-desc">Creative ideation for product features and innovation sprints.</div></div>
+        <div class="bee-card"><div class="bee-name">sophia-bee</div><div class="bee-tier">Premium · conc: 2</div><div class="bee-desc">Infinite-knowledge mapping, ontology building, graph reasoning.</div></div>
+        <div class="bee-card"><div class="bee-name">memory-bee</div><div class="bee-tier">Fast · conc: 5</div><div class="bee-desc">Vector memory ops: embed, recall, consolidate Qdrant entries.</div></div>
+        <div class="bee-card"><div class="bee-name">comms-bee</div><div class="bee-tier">Fast · conc: 5</div><div class="bee-desc">Slack/Discord message routing, notification formatting.</div></div>
+        <div class="bee-card"><div class="bee-name">analysis-bee</div><div class="bee-tier">Standard · conc: 3</div><div class="bee-desc">Statistical analysis, pattern detection, CSL weight calibration.</div></div>
+        <div class="bee-card"><div class="bee-name">auditor-bee</div><div class="bee-tier">Standard · conc: 2</div><div class="bee-desc">System self-audit, bottleneck detection, optimization proposals.</div></div>
+        <div class="bee-card"><div class="bee-name">test-bee</div><div class="bee-tier">Fast · conc: 5</div><div class="bee-desc">Jest test generation, PHI coverage validation, snapshot testing.</div></div>
+        <div class="bee-card"><div class="bee-name">review-bee</div><div class="bee-tier">Standard · conc: 3</div><div class="bee-desc">Code review, PR commentary, architecture risk flagging.</div></div>
+        <div class="bee-card"><div class="bee-name">doc-bee</div><div class="bee-tier">Standard · conc: 3</div><div class="bee-desc">Documentation generation from code and specs. Markdown output.</div></div>
+        <div class="bee-card"><div class="bee-name">design-bee</div><div class="bee-tier">Standard · conc: 2</div><div class="bee-desc">UI/UX critique, design token generation, accessibility checks.</div></div>
+        <div class="bee-card"><div class="bee-name">infra-bee</div><div class="bee-tier">Standard · conc: 2</div><div class="bee-desc">GCP resource management, cost optimization, scaling decisions.</div></div>
+        <div class="bee-card"><div class="bee-name">data-bee</div><div class="bee-tier">Standard · conc: 3</div><div class="bee-desc">Database query generation, migration planning, schema analysis.</div></div>
+        <div class="bee-card"><div class="bee-name">ml-bee</div><div class="bee-tier">Premium · conc: 2</div><div class="bee-desc">Model selection, fine-tuning coordination, arena competition.</div></div>
+        <div class="bee-card"><div class="bee-name">security-bee</div><div class="bee-tier">Standard · conc: 2</div><div class="bee-desc">Threat modeling, CVE scanning, RBAC policy generation.</div></div>
+        <div class="bee-card"><div class="bee-name">billing-bee</div><div class="bee-tier">Fast · conc: 5</div><div class="bee-desc">Stripe event processing, invoice management, usage metering.</div></div>
+        <div class="bee-card"><div class="bee-name">support-bee</div><div class="bee-tier">Fast · conc: 5</div><div class="bee-desc">User support triage, FAQ routing, escalation detection.</div></div>
+        <div class="bee-card"><div class="bee-name">translate-bee</div><div class="bee-tier">Fast · conc: 5</div><div class="bee-desc">Multi-language content translation with context preservation.</div></div>
+        <div class="bee-card"><div class="bee-name">report-bee</div><div class="bee-tier">Standard · conc: 3</div><div class="bee-desc">Executive summary generation, KPI report compilation.</div></div>
+      </div>
+    </section>
+
+    <!-- 02.2 Swarm Consensus -->
+    <section class="doc-section" id="swarm-consensus">
+      <div class="section-label">02.2 — Features</div>
+      <div class="section-title">Swarm Consensus Protocol</div>
+      <div class="section-body">
+        <p>When a high-stakes decision requires multiple perspectives, the conductor spawns a <strong>consensus session</strong> across 3–5 bees from the relevant swarm. Each bee independently evaluates the problem and returns a result with a CSL confidence score. The conductor aggregates scores using a φ-weighted average to determine the final action.</p>
+        <p>The consensus threshold is the <strong>INJECT gate (0.718)</strong>. If the aggregate CSL score falls below this threshold, the workflow pauses and escalates to a Brain-tier bee for meta-review before proceeding.</p>
+      </div>
+      <div class="code-block">
+<span class="hl-comment">// Consensus aggregation — weighted CSL average</span>
+<span class="hl">function</span> aggregateConsensus(results: BeeResult[]): <span class="hl">number</span> {
+  <span class="hl">const</span> PHI = <span class="hl-amber">1.618033988749895</span>;
+  <span class="hl">const</span> weights = results.map((_, i) => <span class="hl-amber">1</span> / (PHI ** i));
+  <span class="hl">const</span> weightSum = weights.reduce((a, b) => a + b, <span class="hl-amber">0</span>);
+  <span class="hl">return</span> results.reduce((acc, r, i) =>
+    acc + (r.cslScore * weights[i]) / weightSum, <span class="hl-amber">0</span>
+  );
+}
+<span class="hl-comment">// INJECT gate: 0.718 — aggregate must exceed to proceed</span>
+<span class="hl">const</span> CONSENSUS_THRESHOLD = <span class="hl-amber">0.718</span>;
+      </div>
+    </section>
+
+    <!-- 02.3 Cron -->
+    <section class="doc-section" id="cron-scheduler">
+      <div class="section-label">02.3 — Features</div>
+      <div class="section-title">Cron-Based Job Scheduler</div>
+      <div class="section-body">
+        <p>HeadyBot's cron scheduler fires recurring workflows at Fibonacci-derived intervals. All cron triggers are registered in the conductor's schedule registry and executed via Cloudflare Workers cron triggers for edge-distributed reliability.</p>
+      </div>
+      <table class="data-table">
+        <thead><tr><th>Job</th><th>Interval</th><th>Bee</th><th>Purpose</th></tr></thead>
+        <tbody>
+          <tr><td>health-check</td><td>fib(7)=13 min</td><td>observer-bee</td><td>System health telemetry broadcast to heady-manager</td></tr>
+          <tr><td>memory-consolidate</td><td>fib(9)=34 min</td><td>memory-bee</td><td>Qdrant vector deduplication and codebook optimization</td></tr>
+          <tr><td>auto-commit</td><td>fib(8)=21 min</td><td>devops-bee</td><td>Staged git commits via auto-commit-engine.js</td></tr>
+          <tr><td>dlq-inspect</td><td>fib(10)=55 min</td><td>auditor-bee</td><td>Scan dead-letter queue, attempt replay or alert ops</td></tr>
+          <tr><td>system-audit</td><td>Daily (midnight)</td><td>auditor-bee</td><td>Infinite Recursive Ascension Loop — self-optimization pass</td></tr>
+          <tr><td>billing-sync</td><td>fib(11)=89 min</td><td>billing-bee</td><td>Reconcile Stripe usage with internal metering records</td></tr>
+        </tbody>
+      </table>
+    </section>
+
+    <!-- 02.4 Workflow Orchestration -->
+    <section class="doc-section" id="workflow-orchestration">
+      <div class="section-label">02.4 — Features</div>
+      <div class="section-title">Multi-Step Workflow Orchestration</div>
+      <div class="section-body">
+        <p>HeadyBot ships with a library of pre-built workflow templates for common automation scenarios. Each workflow is defined as a JSON DAG and can be triggered by webhook, API call, cron schedule, or manual dispatch from the heady-admin console.</p>
+      </div>
+      <div class="card-grid">
+        <div class="card">
+          <h3>Auto-PR Review</h3>
+          <p>Triggered on <code>pull_request.opened</code>. Runs deep_scan → risk analysis → code review → PR comment via heady_buddy. 3-step DAG.</p>
+        </div>
+        <div class="card">
+          <h3>Incident Response</h3>
+          <p>Triggered by Sentry error alert. Spawns observer-bee + sentinel-bee in parallel to trace root cause. Posts findings to Slack ops channel.</p>
+        </div>
+        <div class="card">
+          <h3>Content Pipeline</h3>
+          <p>Triggered on CMS update. Runs SEO analysis → translation → publish via content-bee chain. Supports 5 parallel language targets.</p>
+        </div>
+        <div class="card">
+          <h3>Deployment Flow</h3>
+          <p>Triggered on main branch push. Runs tests → build → Cloud Run promotion via devops-bee + deployment-bee. Rollback on CSL confidence drop.</p>
+        </div>
+      </div>
+    </section>
+
+    <div class="divider"></div>
+
+    <!-- 03 Getting Started -->
+    <section class="doc-section" id="quickstart">
+      <div class="section-label">03.1 — Getting Started</div>
+      <div class="section-title">Quickstart</div>
+      <div class="section-body">
+        <p>Submit a workflow to HeadyBot via the orchestration API endpoint. Authenticate with a JWT obtained from the <code>heady-manager</code> auth flow, then POST a workflow definition to <code>/api/orchestration</code>.</p>
+      </div>
+      <div class="code-block">
+<span class="hl-comment"># Submit a single-bee task</span>
+curl -X POST https://api.headysystems.com/api/orchestration \
+  -H <span class="hl-green">"Authorization: Bearer $JWT"</span> \
+  -H <span class="hl-green">"Content-Type: application/json"</span> \
+  -d <span class="hl-green">'{
+    "workflow": {
+      "name": "Quick Research Task",
+      "steps": [{
+        "id": "s1",
+        "bee": "researcher-bee",
+        "tools": ["analyze", "patterns"],
+        "input": { "objective": "Summarize recent Heady architecture changes" }
+      }]
+    }
+  }'</span>
+
+<span class="hl-comment"># Response</span>
+{ <span class="hl-green">"workflowId"</span>: <span class="hl-green">"wf_01j8..."</span>, <span class="hl-green">"status"</span>: <span class="hl-green">"QUEUED"</span>, <span class="hl-green">"estimatedMs"</span>: <span class="hl-amber">11090</span> }
+      </div>
+    </section>
+
+    <section class="doc-section" id="spawn-bee">
+      <div class="section-label">03.2 — Getting Started</div>
+      <div class="section-title">Spawn a Bee via SDK</div>
+      <div class="section-body">
+        <p>The <strong>@headybot/sdk</strong> package provides a typed interface for spawning bees and monitoring workflow progress from Node.js or edge environments.</p>
+      </div>
+      <div class="code-block">
+<span class="hl">import</span> { HeadyBot } from <span class="hl-green">'@headybot/sdk'</span>;
+
+<span class="hl">const</span> bot = <span class="hl">new</span> HeadyBot({ apiKey: process.env.HEADY_API_KEY });
+
+<span class="hl-comment">// Spawn a single bee</span>
+<span class="hl">const</span> result = <span class="hl">await</span> bot.spawn({
+  bee: <span class="hl-green">'researcher-bee'</span>,
+  objective: <span class="hl-green">'Audit the Heady security posture for Q2 2025'</span>,
+  tools: [<span class="hl-green">'risks'</span>, <span class="hl-green">'analyze'</span>, <span class="hl-green">'deep_scan'</span>],
+  timeout: <span class="hl-amber">11090</span>,  <span class="hl-comment">// TIMING.NORMAL</span>
+});
+
+console.log(result.cslScore);  <span class="hl-comment">// 0.882 → HIGH confidence</span>
+console.log(result.output);    <span class="hl-comment">// Structured research report</span>
+      </div>
+    </section>
+
+    <div class="divider"></div>
+
+    <!-- 04 Reference -->
+    <section class="doc-section" id="agent-registry">
+      <div class="section-label">04.1 — Reference</div>
+      <div class="section-title">Agent Registry API</div>
+      <div class="section-body">
+        <p>Query the live agent registry via the <code>/api/agents</code> endpoint to inspect swarm status, bee availability, and current concurrency metrics.</p>
+      </div>
+      <table class="data-table">
+        <thead><tr><th>Endpoint</th><th>Method</th><th>Description</th></tr></thead>
+        <tbody>
+          <tr><td>/api/agents</td><td>GET</td><td>List all registered swarms and active bee counts</td></tr>
+          <tr><td>/api/agents/:swarmId</td><td>GET</td><td>Detailed swarm metrics: active, idle, queued bees</td></tr>
+          <tr><td>/api/agents/:swarmId/spawn</td><td>POST</td><td>Directly spawn a bee in the specified swarm</td></tr>
+          <tr><td>/api/orchestration</td><td>POST</td><td>Submit a full workflow DAG for execution</td></tr>
+          <tr><td>/api/orchestration/:workflowId</td><td>GET</td><td>Poll workflow execution status and step results</td></tr>
+          <tr><td>/api/orchestration/:workflowId/cancel</td><td>POST</td><td>Cancel an in-progress workflow gracefully</td></tr>
+        </tbody>
+      </table>
+    </section>
+
+    <section class="doc-section" id="phi-concurrency">
+      <div class="section-label">04.2 — Reference</div>
+      <div class="section-title">φ Concurrency Model</div>
+      <div class="section-body">
+        <p>HeadyBot's concurrency model is strictly bounded by Fibonacci values. The auto-tuner (<code>heady-eval</code>) dynamically adjusts active concurrency within these bounds based on compute pressure and latency deltas — never exceeding Fibonacci thresholds.</p>
+      </div>
+      <table class="data-table">
+        <thead><tr><th>Resource</th><th>Fibonacci Value</th><th>fib(n)</th></tr></thead>
+        <tbody>
+          <tr><td>Min thread pool</td><td>2</td><td>fib(3)</td></tr>
+          <tr><td>Standard pool</td><td>3</td><td>fib(4)</td></tr>
+          <tr><td>Burst pool</td><td>5</td><td>fib(5)</td></tr>
+          <tr><td>Max single-swarm bees</td><td>8</td><td>fib(6)</td></tr>
+          <tr><td>Max cross-swarm parallel</td><td>13</td><td>fib(7)</td></tr>
+          <tr><td>Total swarm types</td><td>17</td><td>prime near fib</td></tr>
+          <tr><td>Max DAG steps</td><td>21</td><td>fib(8)</td></tr>
+          <tr><td>Total bee types</td><td>89</td><td>fib(11)</td></tr>
+          <tr><td>Cache max entries</td><td>987</td><td>fib(16)</td></tr>
+        </tbody>
+      </table>
+    </section>
+
+    <section class="doc-section" id="mcp-tools">
+      <div class="section-label">04.3 — Reference</div>
+      <div class="section-title">MCP Tool Array (47 Tools)</div>
+      <div class="section-body">
+        <p>Every bee has access to a subset of the 47-tool MCP array. Tool permissions are governed by a <strong>capability bitmask</strong> assigned at spawn time by the conductor. The bitmask is validated by <code>heady-guard</code> Zero-Trust Sandbox before each tool call.</p>
+      </div>
+      <table class="data-table">
+        <thead><tr><th>Category</th><th>Tools</th><th>Primary Bees</th></tr></thead>
+        <tbody>
+          <tr><td>Intelligence</td><td>deep_scan, analyze, patterns, refactor, risks</td><td>researcher-bee, brain-bee</td></tr>
+          <tr><td>Memory & Vector</td><td>vector_store, search, stats, embed, learn, recall</td><td>memory-bee, sophia-bee</td></tr>
+          <tr><td>Orchestration</td><td>auto_flow, orchestrator, csl_engine</td><td>brain-bee, agents-bee</td></tr>
+          <tr><td>Code Execution</td><td>coder, battle, claude, openai, gemini, groq</td><td>coder-bee, ml-bee</td></tr>
+          <tr><td>Operations</td><td>deploy, health, maintenance, telemetry, maid</td><td>devops-bee, observer-bee</td></tr>
+          <tr><td>Communication</td><td>heady_buddy, notify, slack_post, discord_reply</td><td>comms-bee, support-bee</td></tr>
+        </tbody>
+      </table>
+      <div class="info-box">
+        <strong>Tool Sandboxing:</strong> Every MCP tool call flows through the heady-guard Zero-Trust Sandbox. A tool cannot execute unless the calling bee's capability bitmask mathematically aligns with the required RBAC threshold, evaluated via JWT validator. Failed authorization attempts are logged to the AUDIT_SWARM for investigation.
+      </div>
+    </section>
+
+  </main>
+</div>
+
+<footer class="footer">
+  <div class="footer-inner">
+    <div class="footer-copy">© 2025 HeadyConnection Inc. — HeadyBot · Layer 7 Octagon Automation · 17 Swarms · 89 Bees · φ = 1.618…</div>
+    <div class="footer-links">
+      <a href="https://headyme.com">HeadyMe</a>
+      <a href="https://headysystems.com">HeadySystems</a>
+      <a href="https://headyconnection.org">HeadyConnection</a>
+      <a href="https://headybuddy.org">HeadyBuddy</a>
+      <a href="https://headymcp.com">HeadyMCP</a>
+      <a href="https://headyio.com">HeadyIO</a>
+      <a href="https://headyai.com">HeadyAI</a>
+      <a href="https://headyapi.com">HeadyAPI</a>
+    </div>
+  </div>
+</footer>
+
+<script>
+  const sections = document.querySelectorAll('.doc-section[id]');
+  const navLinks = document.querySelectorAll('.sidebar-link');
+  const observer = new IntersectionObserver((entries) => {
+    entries.forEach(entry => {
+      if (entry.isIntersecting) {
+        const id = entry.target.getAttribute('id');
+        navLinks.forEach(link => link.classList.toggle('active', link.getAttribute('href') === '#' + id));
+      }
+    });
+  }, { rootMargin: '-20% 0px -70% 0px' });
+  sections.forEach(s => observer.observe(s));
+</script>
+</body>
+</html>
